@@ -22,7 +22,7 @@ def gerarSpecs(img):
 readCSV = pd.read_csv("test_post_competition.csv")
 name = readCSV['fname']
 categoria = readCSV['label']
-Parallel(n_jobs=4, verbose=10)(delayed(gerarSpecs)(i) for i in name)
+Parallel(n_jobs=6, verbose=10)(delayed(gerarSpecs)(i) for i in name)
 
     
 

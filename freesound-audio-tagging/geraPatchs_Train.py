@@ -19,5 +19,5 @@ def criaPatch(nomeImg):
         right+=8 
 
 if __name__ == "__main__":
-    imagens =  os.listdir('/home/vitor/Documentos/TCC-1/freesound-audio-tagging/specsTrain')
-    Parallel(n_jobs=4, verbose=1)(delayed(criaPatch)(i) for i in imagens)
+    imagens =  os.listdir('specsTrain/')
+    Parallel(n_jobs=12, verbose=10)(delayed(criaPatch)(i) for i in imagens)

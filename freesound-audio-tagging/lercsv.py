@@ -25,7 +25,7 @@ class Categoria:
 if __name__ == "__main__":
 
     categorias = []
-    readCSV = pd.read_csv("train.csv")
+    readCSV = pd.read_csv("train_post_competition.csv")
     
     for row in readCSV['label']:
         indice = isThere(categorias, row)
@@ -35,7 +35,7 @@ if __name__ == "__main__":
             categorias.append(Categoria(row, 1))
     
     arq = open('audiosEscolhidos.txt', 'w')
-    readCSV = pd.read_csv("train.csv")
+    readCSV = pd.read_csv("train_post_competition.csv")
     for categoria in categorias:
 
        nomes = readCSV['fname']

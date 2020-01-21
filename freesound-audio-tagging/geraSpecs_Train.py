@@ -19,7 +19,7 @@ def gerarSpecs(img):
     plt.savefig("specsTrain/" + img.replace('.wav', '') + '.png')
     plt.close()
 
-readCSV = pd.read_csv("audiosEscolhidos.csv")
+readCSV = pd.read_csv("train_post_competition.csv")
 name = readCSV['fname']
 categoria = readCSV['label']
 Parallel(n_jobs=4, verbose=1)(delayed(gerarSpecs)(i) for i in name)
