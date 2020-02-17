@@ -12,15 +12,15 @@ def CriaArray(img, lista, categoria):
     return lista
 
 if __name__ == "__main__":
-    arquivo = pd.read_csv('train_post_competition.csv')
+    arquivo = pd.read_csv('audiosEscolhidos.csv')
     name = arquivo['fname']
     categorias = arquivo['label']
     lista = list()
     porcentagem = 0
-    for n in name[:300]:
+    for n in name:
         lista = CriaArray(n, lista, categorias[porcentagem])
         porcentagem+=1
-        print(((porcentagem*100)/300))
+        print(((porcentagem*100)/936))
     lista = array(lista)
     print(lista.shape)
     np.savetxt('categorias.txt', lista, newline='\n', fmt='%s')

@@ -16,14 +16,14 @@ def CriaArray(img, lista):
     return lista
 
 if __name__ == "__main__":
-    arquivo = pd.read_csv('train_post_competition.csv')
+    arquivo = pd.read_csv('audiosEscolhidos.csv')
     name = arquivo['fname']
     lista = list()
     porcentagem = 0
-    for n in name[:5]:
+    for n in name:
         lista = CriaArray(n, lista)
         porcentagem+=1
-        print(((porcentagem*100)/5))
+        print(((porcentagem*100)/936))
     lista = array(lista)
     np.savetxt('trainArray.txt', lista, newline='\n')
     
