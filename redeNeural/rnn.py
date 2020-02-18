@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import tensorflow
+from keras.utils import to_categorical
+import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 from tensorflow.keras.models import load_model
@@ -16,25 +17,34 @@ names = os.listdir('C:/Users/Pichau/Desktop/TCC/freesound-audio-tagging/patchsTr
 imagens_treino = []
 
 print("Carregando imagens")
-for i in names[0:46395]:
+for i in names[0:3000]:
     arr = Image.open(r"../freesound-audio-tagging/patchsTrain/" + i)
     arr = np.array(arr)
     imagens_treino.append(arr)
 imagens_treino = np.asarray(imagens_treino)
 imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
+print(imagens_treino.shape)
+
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias.txt", delimiter='\n', dtype= 'int')
+identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias.txt", delimiter='\n', dtype= 'str')
+categorias = sorted(set(identificacoes_treino))
+dic = dict()
+for n, f in enumerate(categorias):
+    dic[f] = n
+for i in range(0, len(identificacoes_treino)):
+    identificacoes_treino[i] = dic[identificacoes_treino[i]]
+identificacoes_treino = to_categorical(identificacoes_treino)
+identificacoes_treino = identificacoes_treino[0:3000]
 
 print("Inicializando modelo")
 modelo = Sequential()
 modelo.add(Conv2D(100, (2, 2), input_shape=(128, 8, 1), activation='relu'))
 modelo.add(MaxPooling2D(pool_size=(2, 2)))
-modelo.add(Dropout(0.2))
+modelo.add(Conv2D(50, (2, 2), activation='relu'))
+modelo.add(MaxPooling2D(pool_size=(2, 2)))
 modelo.add(Flatten())
-modelo.add(Dense(128, activation='relu'))
 modelo.add(Dense(64, activation='relu'))
-modelo.add(Dense(32, activation='relu'))
 modelo.add(Dense(41, activation='softmax', name='predict'))
 modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
