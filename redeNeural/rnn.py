@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from keras.backend.tensorflow_backend import set_session
 from keras.utils import to_categorical
 import tensorflow as tf
 from tensorflow import keras
@@ -14,16 +14,29 @@ from keras.layers import Dense
 from keras.layers import Flatten
 from keras.models import Sequential
 names = os.listdir('C:/Users/Pichau/Desktop/TCC/freesound-audio-tagging/patchsTrain')
+from keras.callbacks import EarlyStopping
+import pandas as pd
+import glob
+
+names = pd.read_csv("../freesound-audio-tagging/audiosEscolhidos.csv")
+names = names['fname']
 imagens_treino = []
 
+session_config=tf.compat.v1.ConfigProto(
+    gpu_options=tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.7))
+tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_config))
+
 print("Carregando imagens")
-for i in names[0:3000]:
-    arr = Image.open(r"../freesound-audio-tagging/patchsTrain/" + i)
-    arr = np.array(arr)
-    imagens_treino.append(arr)
+for i in names:
+    quantidade = glob.glob("../freesound-audio-tagging/patchsTrain/"+  i.replace('.wav', '')+ "_*.png")
+    print(i)
+    for y in range(0, len(quantidade)):
+        arr = Image.open(r"../freesound-audio-tagging/patchsTrain/"+  i.replace('.wav', '')+ "_" + str(y) + ".png")
+        arr = np.array(arr)
+        imagens_treino.append(arr)
 imagens_treino = np.asarray(imagens_treino)
 imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
-print(imagens_treino.shape)
+
 
 
 print("Carregando classes")
@@ -35,17 +48,20 @@ for n, f in enumerate(categorias):
 for i in range(0, len(identificacoes_treino)):
     identificacoes_treino[i] = dic[identificacoes_treino[i]]
 identificacoes_treino = to_categorical(identificacoes_treino)
-identificacoes_treino = identificacoes_treino[0:3000]
+#identificacoes_treino = identificacoes_treino
 
 print("Inicializando modelo")
 modelo = Sequential()
 modelo.add(Conv2D(100, (2, 2), input_shape=(128, 8, 1), activation='relu'))
 modelo.add(MaxPooling2D(pool_size=(2, 2)))
-modelo.add(Conv2D(50, (2, 2), activation='relu'))
+modelo.add(Conv2D(150, (2, 2), input_shape=(128, 8, 1), activation='relu'))
 modelo.add(MaxPooling2D(pool_size=(2, 2)))
+modelo.add(Dropout(0.2))
 modelo.add(Flatten())
 modelo.add(Dense(64, activation='relu'))
 modelo.add(Dense(41, activation='softmax', name='predict'))
 modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-historico = modelo.fit(imagens_treino, identificacoes_treino, epochs=5, validation_split=0.2)
+
+ES = EarlyStopping(monitor='val_loss', patience=40, verbose=1, min_delta=0.001, restore_best_weights=True)
+historico = modelo.fit(imagens_treino, identificacoes_treino,batch_size=1000, callbacks=[ES], epochs=1000, validation_split=0.2)

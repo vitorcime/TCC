@@ -6,12 +6,10 @@ from PIL import Image
 from numpy import array   
 
 def CriaArray(img, lista):
-    oi = glob.glob("./patchsTrain/"+  img.replace('.wav', '')+ "_*.png")
-    for i in oi:
+    patches = glob.glob("./patchsTrain/"+  img.replace('.wav', '')+ "_*.png")
+    for i in patches:
         imagem = Image.open(i)
         arr =  array(imagem) 
-        arr = arr.sum(axis=2)/4
-        arr = arr.sum(axis=1)/8
         lista.append(arr) 
     return lista
 
@@ -25,6 +23,7 @@ if __name__ == "__main__":
         porcentagem+=1
         print(((porcentagem*100)/936))
     lista = array(lista)
+    print(lista.shape)
     np.savetxt('trainArray.txt', lista, newline='\n')
     
 

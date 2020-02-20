@@ -6,13 +6,13 @@ from PIL import Image
 from numpy import array   
 
 def CriaArray(img, lista, categoria):
-    quantidade = glob.glob("./patchsTest/"+  img.replace('.wav', '')+ "_*.png")
+    quantidade = glob.glob("./patchsTrain/"+  img.replace('.wav', '')+ "_*.png")
     for i in range(0, len(quantidade)):
         lista.append(categoria)
     return lista
 
 if __name__ == "__main__":
-    arquivo = pd.read_csv('test_post_competition.csv')
+    arquivo = pd.read_csv('train_post_competition.csv')
     name = arquivo['fname']
     categorias = arquivo['label']
     lista = list()
