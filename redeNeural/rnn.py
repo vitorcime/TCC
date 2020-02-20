@@ -16,26 +16,18 @@ from keras.models import Sequential
 from keras.callbacks import EarlyStopping
 import pandas as pd
 import glob
+from sklearn.preprocessing import StandardScaler
 
-names = pd.read_csv("../freesound-audio-tagging/audiosEscolhidos.csv")
-names = names['fname']
-imagens_treino = []
+scaler = StandardScaler()
 
 session_config=tf.compat.v1.ConfigProto(
     gpu_options=tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.7))
 tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_config))
 
-print("Carregando imagens")
-for i in names:
-    quantidade = glob.glob("../freesound-audio-tagging/patchsTrain/"+  i.replace('.wav', '')+ "_*.png")
-    print(i)
-    for y in range(0, len(quantidade)):
-        arr = Image.open(r"../freesound-audio-tagging/patchsTrain/"+  i.replace('.wav', '')+ "_" + str(y) + ".png")
-        arr = np.array(arr)
-        imagens_treino.append(arr)
-imagens_treino = np.asarray(imagens_treino)
-imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
 
+print("Carregando imagens")
+imagens_treino = np.load("lista.npy")
+imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
 
 
 print("Carregando classes")
@@ -47,7 +39,7 @@ for n, f in enumerate(categorias):
 for i in range(0, len(identificacoes_treino)):
     identificacoes_treino[i] = dic[identificacoes_treino[i]]
 identificacoes_treino = to_categorical(identificacoes_treino)
-#identificacoes_treino = identificacoes_treino
+
 
 print("Inicializando modelo")
 modelo = Sequential()
