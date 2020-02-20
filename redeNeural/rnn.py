@@ -13,7 +13,6 @@ from keras.layers import Dropout
 from keras.layers import Dense
 from keras.layers import Flatten
 from keras.models import Sequential
-names = os.listdir('C:/Users/Pichau/Desktop/TCC/freesound-audio-tagging/patchsTrain')
 from keras.callbacks import EarlyStopping
 import pandas as pd
 import glob
