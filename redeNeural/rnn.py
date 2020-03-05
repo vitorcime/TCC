@@ -2,21 +2,16 @@
 from keras.backend.tensorflow_backend import set_session
 from keras.utils import to_categorical
 import tensorflow as tf
-from tensorflow import keras
+import keras
 import numpy as np
-from tensorflow.keras.models import load_model
 import os
 from PIL import Image
-from keras.layers.convolutional import Conv2D 
-from keras.layers.convolutional import MaxPooling2D
-from keras.layers import Dropout
-from keras.layers import Dense
-from keras.layers import Flatten
-from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Input 
 from keras.callbacks import EarlyStopping
 import pandas as pd
 import glob
 from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 scaler = StandardScaler()
 
@@ -28,7 +23,17 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_confi
 print("Carregando imagens")
 imagens_treino = np.load("lista.npy")
 imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
-
+print(imagens_treino.shape)
+train_shape = imagens_treino.shape
+imagens_treino = np.reshape(imagens_treino, (imagens_treino.shape[0], -1))
+print(imagens_treino.shape)
+ss = StandardScaler()
+print("Fit")
+ss.fit(imagens_treino)
+print("Transform")
+imagens_treino = ss.transform(imagens_treino)
+print("Reshape")
+imagens_treino = np.reshape(imagens_treino, train_shape)
 
 print("Carregando classes")
 identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias.txt", delimiter='\n', dtype= 'str')
@@ -42,6 +47,21 @@ identificacoes_treino = to_categorical(identificacoes_treino)
 
 
 print("Inicializando modelo")
+ipt = Input(shape=(128, 8, 1) )
+l = Conv2D(100, (2, 2),padding='same', activation='relu')(ipt)
+l = MaxPooling2D(pool_size=(2, 2))(l)
+l = Conv2D(100, (2, 2), activation='relu', padding='same')(l)
+l = MaxPooling2D(pool_size=(2, 2))(l)
+l = Conv2D(100, (2, 2), activation='relu', padding='same')(l)
+l = MaxPooling2D(pool_size=(2, 2))(l)
+l = Dropout(0.2)(l)
+l = Flatten()(l)
+l = Dense(256, activation='relu')(l)
+l = Dense(41, activation='softmax')(l)
+modelo = keras.Model(inputs=ipt, outputs=l)
+#print(modelo.summary())
+
+'''
 modelo = Sequential()
 modelo.add(Conv2D(100, (2, 2), input_shape=(128, 8, 1), activation='relu'))
 modelo.add(MaxPooling2D(pool_size=(2, 2)))
@@ -52,7 +72,13 @@ modelo.add(Flatten())
 modelo.add(Dense(64, activation='relu'))
 modelo.add(Dense(41, activation='softmax', name='predict'))
 modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
+'''
+modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 ES = EarlyStopping(monitor='val_loss', patience=40, verbose=1, min_delta=0.001, restore_best_weights=True)
 historico = modelo.fit(imagens_treino, identificacoes_treino,batch_size=1000, callbacks=[ES], epochs=1000, validation_split=0.2)
+
+plt.plot(historico.history['loss'], label='Training')
+plt.plot(historico.history['val_loss'], label='Validation')
+plt.legend()
+plt.show()
