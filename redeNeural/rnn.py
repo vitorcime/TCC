@@ -21,7 +21,7 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_confi
 
 
 print("Carregando imagens")
-imagens_treino = np.load("lista.npy")
+imagens_treino = np.load("trainArrayVerificados.npy")
 imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
 print(imagens_treino.shape)
 train_shape = imagens_treino.shape
@@ -48,12 +48,12 @@ identificacoes_treino = to_categorical(identificacoes_treino)
 
 print("Inicializando modelo")
 ipt = Input(shape=(128, 8, 1) )
-l = Conv2D(100, (2, 2),padding='same', activation='relu')(ipt)
-l = MaxPooling2D(pool_size=(2, 2))(l)
-l = Conv2D(100, (2, 2), activation='relu', padding='same')(l)
-l = MaxPooling2D(pool_size=(2, 2))(l)
-l = Conv2D(100, (2, 2), activation='relu', padding='same')(l)
-l = MaxPooling2D(pool_size=(2, 2))(l)
+l = Conv2D(100, (7, 7),padding='same', activation='relu')(ipt)
+l = MaxPooling2D(pool_size=(3, 3),strides=2)(l)
+l = Conv2D(100, (5, 5), activation='relu', padding='same')(l)
+l = MaxPooling2D(pool_size=(3, 3), strides=2)(l)
+l = Conv2D(100, (3, 3), activation='relu', padding='same')(l)
+#l = MaxPooling2D(pool_size=(3, 3))(l)
 l = Dropout(0.2)(l)
 l = Flatten()(l)
 l = Dense(256, activation='relu')(l)
