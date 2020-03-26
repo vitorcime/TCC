@@ -17,13 +17,13 @@ if __name__ == "__main__":
     categorias = arquivo['label']
     lista = list()
     porcentagem = 0
-    for n in name:
+    for n in name[:5]:
         lista = CriaArray(n, lista, categorias[porcentagem])
         porcentagem+=1
         print(((porcentagem*100)/3710))
     lista = array(lista)
     print(lista.shape)
-    np.savetxt('categorias.txt', lista, newline='\n', fmt='%s')
+    np.savetxt('../categorias/categorias.txt', lista, newline='\n', fmt='%s')
     
 
     

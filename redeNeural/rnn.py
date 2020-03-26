@@ -6,12 +6,13 @@ import keras
 import numpy as np
 import os
 from PIL import Image
-from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Input 
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Input, Lambda 
 from keras.callbacks import EarlyStopping
 import pandas as pd
 import glob
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+import keras.backend as K
 
 scaler = StandardScaler()
 
@@ -36,7 +37,7 @@ print("Reshape")
 imagens_treino = np.reshape(imagens_treino, train_shape)
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias.txt", delimiter='\n', dtype= 'str')
+identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categorias.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_treino))
 dic = dict()
 for n, f in enumerate(categorias):
@@ -47,17 +48,14 @@ identificacoes_treino = to_categorical(identificacoes_treino)
 
 
 print("Inicializando modelo")
-ipt = Input(shape=(128, 8, 1) )
-l = Conv2D(100, (7, 7),padding='same', activation='relu')(ipt)
-l = MaxPooling2D(pool_size=(3, 3),strides=2)(l)
-l = Dropout(0.4)(l)
-l = Conv2D(100, (5, 5), activation='relu', padding='same')(l)
-l = MaxPooling2D(pool_size=(3, 3), strides=2)(l)
-l = Dropout(0.4)(l)
-l = Conv2D(100, (3, 3), activation='relu', padding='same')(l)
-#l = MaxPooling2D(pool_size=(3, 3))(l)
+ipt = Input(shape=(64, 26, 1) )
+l = Conv2D(100, (7, 7),padding='same', strides=1, activation='relu')(ipt)
+l = MaxPooling2D(pool_size=(3, 3),strides=2, padding='same')(l)
+l = Conv2D(150, (5, 5), activation='relu', strides=1, padding='same')(l)
+l = MaxPooling2D(pool_size=(3, 3), strides=2, padding='same')(l)
+l = Conv2D(200, (3, 3), activation='relu', strides=1, padding='same')(l)
+l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
 l = Flatten()(l)
-l = Dense(64, activation='relu')(l)
 l = Dense(41, activation='softmax')(l)
 modelo = keras.Model(inputs=ipt, outputs=l)
 #print(modelo.summary())
@@ -77,7 +75,7 @@ modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accu
 modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 ES = EarlyStopping(monitor='val_loss', patience=40, verbose=1, min_delta=0.001, restore_best_weights=True)
-historico = modelo.fit(imagens_treino, identificacoes_treino,batch_size=1000, callbacks=[ES], epochs=1000, validation_split=0.2)
+historico = modelo.fit(imagens_treino, identificacoes_treino,batch_size=64, callbacks=[ES], epochs=1000, validation_split=0.2)
 
 plt.plot(historico.history['loss'], label='Training')
 plt.plot(historico.history['val_loss'], label='Validation')
