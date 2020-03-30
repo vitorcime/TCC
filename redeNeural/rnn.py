@@ -11,6 +11,7 @@ from keras.callbacks import EarlyStopping
 import pandas as pd
 import glob
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import keras.backend as K
 
@@ -23,18 +24,10 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_confi
 
 print("Carregando imagens")
 imagens_treino = np.load("trainArrayVerificados.npy")
+#vamos tirar o canal alpha...
+imagens_treino = imagens_treino[:,:,:,:3]
 imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
-print(imagens_treino.shape)
-train_shape = imagens_treino.shape
-imagens_treino = np.reshape(imagens_treino, (imagens_treino.shape[0], -1))
-print(imagens_treino.shape)
-ss = StandardScaler()
-print("Fit")
-ss.fit(imagens_treino)
-print("Transform")
-imagens_treino = ss.transform(imagens_treino)
-print("Reshape")
-imagens_treino = np.reshape(imagens_treino, train_shape)
+
 
 print("Carregando classes")
 identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categorias.txt", delimiter='\n', dtype= 'str')
@@ -45,6 +38,28 @@ for n, f in enumerate(categorias):
 for i in range(0, len(identificacoes_treino)):
     identificacoes_treino[i] = dic[identificacoes_treino[i]]
 identificacoes_treino = to_categorical(identificacoes_treino)
+
+
+X_train, X_val, Y_train, Y_val = train_test_split(imagens_treino, identificacoes_treino, test_size=0.2, 
+    random_state=999, shuffle=True, stratify=np.argmax(identificacoes_treino, axis=1))
+
+print(X_train.shape)
+train_shape = X_train.shape
+X_train = np.reshape(X_train, (X_train.shape[0], -1))
+val_shape= X_val.shape
+X_val = np.reshape(X_val, (X_val.shape[0], -1))
+print(X_train.shape)
+
+ss = StandardScaler()
+print("Fit")
+ss.fit(X_train)
+print("Transform")
+X_train = ss.transform(X_train)
+X_val = ss.transform(X_val)
+
+print("Reshape")
+X_train = np.reshape(X_train, train_shape)
+X_val = np.reshape(X_val, val_shape)
 
 
 print("Inicializando modelo")
@@ -58,7 +73,7 @@ l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
 l = Flatten()(l)
 l = Dense(41, activation='softmax')(l)
 modelo = keras.Model(inputs=ipt, outputs=l)
-#print(modelo.summary())
+print(modelo.summary())
 
 '''
 modelo = Sequential()
@@ -74,10 +89,13 @@ modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accu
 '''
 modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-ES = EarlyStopping(monitor='val_loss', patience=40, verbose=1, min_delta=0.001, restore_best_weights=True)
-historico = modelo.fit(imagens_treino, identificacoes_treino,batch_size=64, callbacks=[ES], epochs=1000, validation_split=0.2)
+ES = EarlyStopping(monitor='val_loss', patience=40, verbose=30, min_delta=0.001, restore_best_weights=True)
+historico = modelo.fit(X_train, Y_train, validation_data=(X_val, Y_val), batch_size=64, callbacks=[ES], epochs=1000, validation_split=0.2)
 
 plt.plot(historico.history['loss'], label='Training')
 plt.plot(historico.history['val_loss'], label='Validation')
 plt.legend()
-plt.show()
+plt.savefig("train_curve.png")
+modelo.save("modelo")
+
+#plt.show()
