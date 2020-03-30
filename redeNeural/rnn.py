@@ -11,6 +11,7 @@ from keras.callbacks import EarlyStopping
 import pandas as pd
 import glob
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import keras.backend as K
 
@@ -23,6 +24,8 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_confi
 
 print("Carregando imagens")
 imagens_treino = np.load("trainArrayVerificados.npy")
+#vamos tirar o canal alpha...
+imagens_treino = imagens_treino[:,:,:,:3]
 imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
 print(imagens_treino.shape)
 train_shape = imagens_treino.shape
@@ -58,7 +61,7 @@ l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
 l = Flatten()(l)
 l = Dense(41, activation='softmax')(l)
 modelo = keras.Model(inputs=ipt, outputs=l)
-#print(modelo.summary())
+print(modelo.summary())
 
 '''
 modelo = Sequential()
@@ -74,10 +77,13 @@ modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accu
 '''
 modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-ES = EarlyStopping(monitor='val_loss', patience=40, verbose=1, min_delta=0.001, restore_best_weights=True)
-historico = modelo.fit(imagens_treino, identificacoes_treino,batch_size=64, callbacks=[ES], epochs=1000, validation_split=0.2)
+X_train, X_val, Y_train, Y_val = train_test_split(imagens_treino, identificacoes_treino, test_size=0.2, random_state=999, shuffle=True, stratify=np.argmax(identificacoes_treino, axis=1))
+
+ES = EarlyStopping(monitor='val_loss', patience=40, verbose=30, min_delta=0.001, restore_best_weights=True)
+historico = modelo.fit(X_train, Y_train, validation_data=(X_val, Y_val), batch_size=64, callbacks=[ES], epochs=1000, validation_split=0.2)
 
 plt.plot(historico.history['loss'], label='Training')
 plt.plot(historico.history['val_loss'], label='Validation')
 plt.legend()
-plt.show()
+plt.savefig("train_curve.png")
+#plt.show()
