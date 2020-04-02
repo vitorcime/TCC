@@ -3,7 +3,6 @@ from keras.utils import to_categorical
 import tensorflow as tf
 import keras
 import numpy as np
-import os
 from PIL import Image
 from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Input, Lambda 
 from keras.callbacks import EarlyStopping
@@ -37,27 +36,24 @@ for i in range(0, len(identificacoes_teste)):
     identificacoes_teste[i] = dic[identificacoes_teste[i]]
 identificacoes_teste = to_categorical(identificacoes_teste)
 
-'''
+
 test_shape = imagens_teste.shape
 imagens_teste = np.reshape(imagens_teste, (imagens_teste.shape[0], -1))
-val_shape= identificacoes_teste.shape
-identificacoes_teste = np.reshape(identificacoes_teste, (identificacoes_teste.shape[0], -1))
-print(imagens_teste.shape)
+
 
 ss = StandardScaler()
-print("Fit")
-ss.fit(imagens_teste)
 print("Transform")
+ss.fit(imagens_teste)
 imagens_teste = ss.transform(imagens_teste)
-identificacoes_teste = ss.transform(identificacoes_teste)
+
 
 print("Reshape")
 imagens_teste = np.reshape(imagens_teste, test_shape)
-identificacoes_teste = np.reshape(identificacoes_teste, val_shape)
-'''
+
+
 
 modelo = load_model("modelo")
-test = modelo.predict(imagens_teste)
+#test = modelo.predict(imagens_teste)
 perda_teste, acuracia_teste = modelo.evaluate(imagens_teste, identificacoes_teste)
 print('Perda do teste: ', perda_teste)
 print('Acuracia do teste: ', acuracia_teste)
