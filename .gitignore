@@ -9,3 +9,4 @@ freesound-audio-tagging/*.txt
 freesound-audio-tagging/*.csv
 freesound-audio-tagging/redeNeural/lista.npy
 *.npy
+*.txt

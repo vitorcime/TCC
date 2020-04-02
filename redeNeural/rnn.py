@@ -75,22 +75,11 @@ l = Dense(41, activation='softmax')(l)
 modelo = keras.Model(inputs=ipt, outputs=l)
 print(modelo.summary())
 
-'''
-modelo = Sequential()
-modelo.add(Conv2D(100, (2, 2), input_shape=(128, 8, 1), activation='relu'))
-modelo.add(MaxPooling2D(pool_size=(2, 2)))
-modelo.add(Conv2D(150, (2, 2), input_shape=(128, 8, 1), activation='relu'))
-modelo.add(MaxPooling2D(pool_size=(2, 2)))
-modelo.add(Dropout(0.2))
-modelo.add(Flatten())
-modelo.add(Dense(64, activation='relu'))
-modelo.add(Dense(41, activation='softmax', name='predict'))
-modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-'''
+
 modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 ES = EarlyStopping(monitor='val_loss', patience=40, verbose=30, min_delta=0.001, restore_best_weights=True)
-historico = modelo.fit(X_train, Y_train, validation_data=(X_val, Y_val), batch_size=64, callbacks=[ES], epochs=1000, validation_split=0.2)
+historico = modelo.fit(X_train, Y_train, validation_data=(X_val, Y_val), batch_size=64, callbacks=[ES], epochs=1000)
 
 plt.plot(historico.history['loss'], label='Training')
 plt.plot(historico.history['val_loss'], label='Validation')
@@ -98,4 +87,3 @@ plt.legend()
 plt.savefig("train_curve.png")
 modelo.save("modelo")
 
-#plt.show()
