@@ -6,12 +6,12 @@ from PIL import Image
 from numpy import array   
 
 def CriaArray(img, lista):
-    quantidade = glob.glob("../patchsTrain/"+  img.replace('.wav', '')+ "_*.png")
+    quantidade = glob.glob("../patchsTest/"+  img.replace('.wav', '')+ "_*.png")
     lista.append(len(quantidade))
     return lista
 
 if __name__ == "__main__":
-    arquivo = pd.read_csv('../audiosEscolhidos.csv')
+    arquivo = pd.read_csv('../test_post_competition.csv')
     name = sorted(arquivo['fname'])
     lista = list()
     porcentagem = 0
@@ -21,7 +21,7 @@ if __name__ == "__main__":
         print("%.3f" % ((porcentagem*100)/len(name)))
     lista = array(lista)
     print(lista.shape)
-    np.savetxt('numeroDePatches.txt', lista, newline='\n', fmt='%s')
+    np.savetxt('../../redeNeural/numeroDePatches.txt', lista, newline='\n', fmt='%s')
     
 
 

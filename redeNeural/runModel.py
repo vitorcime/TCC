@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import keras.backend as K
 from tensorflow.keras.models import load_model
-
+from sklearn.metrics import classification_report
 
 scaler = StandardScaler()
 
@@ -55,7 +55,7 @@ imagens_teste = np.reshape(imagens_teste, test_shape)
 
 modelo = load_model("modelo")
 resultado = modelo.predict(imagens_teste)
-print(resultado.shape)
+
 
 
 numerodePatches = np.loadtxt("numeroDePatches.txt")
@@ -64,14 +64,24 @@ i = 0
 resultadoSoma = list()
 
 for y in numerodePatches:
-    print(i)
-    print((resultado[i:int(y)]).shape)
     resultadoSoma.append(np.sum(resultado[i:int(y)], axis=0))
     i+=1
 resultadoSoma = np.array(resultadoSoma)
-print(resultadoSoma.shape)
+resultadoSoma = np.argmax(resultadoSoma, axis=1)
+print(resultadoSoma)
 
+print("Carregando classes")
+identificacoes_teste = np.loadtxt("../freesound-audio-tagging/categorias/categoriasSpecstest.txt", delimiter='\n', dtype= 'str')
+categorias = sorted(set(identificacoes_teste))
+dic = dict()
+for n, f in enumerate(categorias):
+    dic[f] = n
+for i in range(0, len(identificacoes_teste)):
+    identificacoes_teste[i] = dic[identificacoes_teste[i]]
+identificacoes_teste = to_categorical(identificacoes_teste)
 
+identificacoes_teste = np.argmax(identificacoes_teste, axis=1)
+print(classification_report(resultadoSoma, identificacoes_teste))
 
 '''
 perda_teste, acuracia_teste = modelo.evaluate(imagens_teste, identificacoes_teste)
