@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import keras.backend as K
 from tensorflow.keras.models import load_model
 from sklearn.metrics import classification_report
-
+import dill
 scaler = StandardScaler()
 
 session_config=tf.compat.v1.ConfigProto(
@@ -36,15 +36,16 @@ for n, f in enumerate(categorias):
 for i in range(0, len(identificacoes_teste)):
     identificacoes_teste[i] = dic[identificacoes_teste[i]]
 identificacoes_teste = to_categorical(identificacoes_teste)
+print(identificacoes_teste.shape)
 
 
 test_shape = imagens_teste.shape
 imagens_teste = np.reshape(imagens_teste, (imagens_teste.shape[0], -1))
+print(imagens_teste.shape)
 
 
-ss = StandardScaler()
 print("Transform")
-ss.fit(imagens_teste)
+ss = dill.load(open('ss.dill','rb'))
 imagens_teste = ss.transform(imagens_teste)
 
 
@@ -64,8 +65,8 @@ i = 0
 resultadoSoma = list()
 
 for y in numerodePatches:
-    resultadoSoma.append(np.sum(resultado[i:int(y)], axis=0))
-    i+=1
+    resultadoSoma.append(np.sum(resultado[i:i+int(y),:], axis=0))
+    i+=int(y)
 resultadoSoma = np.array(resultadoSoma)
 resultadoSoma = np.argmax(resultadoSoma, axis=1)
 print(resultadoSoma)

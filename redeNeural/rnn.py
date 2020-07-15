@@ -14,6 +14,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import keras.backend as K
+import dill
+
+
+def mixup(img1,img2,alpha):
+    
 
 scaler = StandardScaler()
 
@@ -25,12 +30,14 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_confi
 print("Carregando imagens")
 imagens_treino = np.load("trainArrayVerificados.npy")
 #vamos tirar o canal alpha...
+print(imagens_treino.shape)
 imagens_treino = imagens_treino[:,:,:,:3]
 imagens_treino = np.mean(imagens_treino, axis=-1, keepdims=True)
+print(imagens_treino.shape)
 
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categorias.txt", delimiter='\n', dtype= 'str')
+identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriasTrain.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_treino))
 dic = dict()
 for n, f in enumerate(categorias):
@@ -53,6 +60,8 @@ print(X_train.shape)
 ss = StandardScaler()
 print("Fit")
 ss.fit(X_train)
+dill.dump(ss, open('ss.dill','wb'))
+
 print("Transform")
 X_train = ss.transform(X_train)
 X_val = ss.transform(X_val)
