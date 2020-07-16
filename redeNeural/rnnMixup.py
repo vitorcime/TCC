@@ -9,13 +9,14 @@ tf.get_logger().setLevel("ERROR")
 import time
 import numpy as np
 import keras
-from keras.layers import Input, Dense
+from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Lambda
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from keras.utils import to_categorical
 from PIL import Image
 from numpy import array
+import keras.backend as K
 
 # # Carregar Dados
 # 
@@ -23,6 +24,9 @@ from numpy import array
 # 
 
 # In[2]:
+session_config=tf.compat.v1.ConfigProto(
+    gpu_options=tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.7))
+tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_config))
 
 print("Carregando imagens")
 patchsNames = np.loadtxt("nomes.txt", delimiter='\n', dtype= 'str')
@@ -130,13 +134,23 @@ class DataGenerator(keras.utils.Sequence):
 
 
 keras.backend.clear_session()
-
+''''
 ipt = Input(shape=(64, 26, 1) )
 net = Dense(100, activation='relu')(ipt)
 net = Dense(100, activation='relu')(net)
 opt = Dense(10, activation='softmax')(net)
-
-model = keras.models.Model(inputs=ipt, outputs=opt)
+'''
+print("Inicializando modelo")
+ipt = Input(shape=(64, 26, 1) )
+l = Conv2D(100, (7, 7),padding='same', strides=1, activation='relu')(ipt)
+l = MaxPooling2D(pool_size=(3, 3),strides=2, padding='same')(l)
+l = Conv2D(150, (5, 5), activation='relu', strides=1, padding='same')(l)
+l = MaxPooling2D(pool_size=(3, 3), strides=2, padding='same')(l)
+l = Conv2D(200, (3, 3), activation='relu', strides=1, padding='same')(l)
+l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
+l = Flatten()(l)
+l = Dense(41, activation='softmax')(l)
+model = keras.models.Model(inputs=ipt, outputs=l)
 model.compile(optimizer=keras.optimizers.Adam(lr=0.005), 
                   loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -153,9 +167,9 @@ t0 = time.time()
 #temos muitas imagens pra carregar e fazer mixup. No caso desse exemplo ele deixa o código mais
 #demorado rs.
 h = model.fit(training_generator, epochs=10, validation_data=validation_generator,
-                       use_multiprocessing=False, workers=4, verbose=0)
+                       use_multiprocessing=False, workers=4, verbose=2)
 print("O treino demorou %.2f segundos." % (time.time() - t0))
-
+model.save("modeloMixup")
 
 
 # plt.plot(h.history['loss'], label='Training loss')
