@@ -16,7 +16,7 @@ if __name__ == "__main__":
     name = sorted(arquivo['fname'])
     lista = list()
     porcentagem = 0
-    for n in name[0:5]:
+    for n in name:
         lista = CriaArray(n, lista)
         porcentagem+=1
         print("%.3f" % ((porcentagem*100)/len(name)))
