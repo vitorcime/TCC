@@ -7,7 +7,6 @@ from numpy import array
 
 def CriaArray(img, lista):
     nomes = glob.glob("../freesound-audio-tagging/patchsTrain/"+  img.replace('.wav', '')+ "_*.png")
-    print(nomes)
     lista.extend(nomes)
     return lista
 
