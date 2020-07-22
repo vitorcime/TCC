@@ -11,7 +11,7 @@ tf.get_logger().setLevel("ERROR")
 import time
 import numpy as np
 import keras
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Lambda
+from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Lambda, BatchNormalization, Activation
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -162,11 +162,18 @@ opt = Dense(10, activation='softmax')(net)
 '''
 print("Inicializando modelo")
 ipt = Input(shape=(64, 26, 1) )
-l = Conv2D(100, (7, 7),padding='same', strides=1, activation='relu')(ipt)
+l = BatchNormalization()(ipt)
+l = Conv2D(100, (7, 7),padding='same', strides=1, activation='linear')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
 l = MaxPooling2D(pool_size=(3, 3),strides=2, padding='same')(l)
-l = Conv2D(150, (5, 5), activation='relu', strides=1, padding='same')(l)
+l = Conv2D(150, (5, 5), activation='linear', strides=1, padding='same')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
 l = MaxPooling2D(pool_size=(3, 3), strides=2, padding='same')(l)
-l = Conv2D(200, (3, 3), activation='relu', strides=1, padding='same')(l)
+l = Conv2D(200, (3, 3), activation='linear', strides=1, padding='same')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
 l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
 l = Flatten()(l)
 l = Dense(41, activation='softmax')(l)
@@ -178,8 +185,8 @@ print(model.summary())
 
 #Instancia os 2 generators, um para os dados de treino e outro para os dados de validação.
 #Atenção ao parâmetro dim.. Ele indica qual é o shape de cada imagem e deve ser passado.
-training_generator = DataGenerator(X_train, Y_train, batch_size=256, shuffle=True, mixup_alpha=0.1)
-validation_generator = DataGenerator(X_val, Y_val, batch_size=256, shuffle=True, mixup_alpha=0.1)
+training_generator = DataGenerator(X_train, Y_train, batch_size=256, shuffle=True, mixup_alpha=0.2)
+validation_generator = DataGenerator(X_val, Y_val, batch_size=256, shuffle=True, mixup_alpha=0.2)
 
 t0 = time.time()
 #Note que agora o fit recebe os generators ao invés dos dados diretamente.
