@@ -2,6 +2,8 @@
 # coding: utf-8
 
 # In[1]:
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 import pandas as pd
 import glob
 import tensorflow as tf
@@ -9,7 +11,7 @@ tf.get_logger().setLevel("ERROR")
 import time
 import numpy as np
 import keras
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Lambda
+from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Lambda, BatchNormalization, Activation
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -17,6 +19,8 @@ from keras.utils import to_categorical
 from PIL import Image
 from numpy import array
 import keras.backend as K
+import copy
+import random
 
 # # Carregar Dados
 # 
@@ -40,9 +44,16 @@ for n, f in enumerate(categorias):
     dic[f] = n
 for i in range(0, len(identificacoes_treino)):
     identificacoes_treino[i] = dic[identificacoes_treino[i]]
+
+rotulos_treino = copy.deepcopy(identificacoes_treino)
+
 identificacoes_treino = to_categorical(identificacoes_treino)
 
-X_train, X_val, Y_train, Y_val = train_test_split(patchsNames, identificacoes_treino, test_size=0.2)
+#é bom tentar estratificar: manter a proporção de elementos de cada classe a mesma no treino e na validação.
+#pra isso usamos o parametro stratify, passando as labels de cada entrada (mas tem que ser no formato do sklearn)
+X_train, X_val, Y_train, Y_val = train_test_split(patchsNames, identificacoes_treino, test_size=0.2, stratify=rotulos_treino)
+
+print(X_train.shape, X_val.shape, Y_train.shape, Y_val.shape)
 
 
 # # Definição da Classe DataGenerator
@@ -100,9 +111,11 @@ class DataGenerator(keras.utils.Sequence):
         # pré-alocar os numpy arrays de saída.
         # Isso é mais rápido que ir fazendo append na lista e depois
         # chamando np.array pra transformar um um numpy array.
-        X = np.empty((output_len, *self.dim))
-        y = np.empty((output_len, *self.labels.shape[1:]))
-        
+        X = np.empty((output_len * 3, *self.dim))
+        y = np.empty((output_len * 3, *self.labels.shape[1:]))
+
+        #print("".join([" " for i in range(random.randint(0,10))])  + "mixing up...")
+
         #pra cada elemento da saída
         for i in range(output_len):
             #computa o índice que contém o indice das 2 imagens
@@ -113,17 +126,24 @@ class DataGenerator(keras.utils.Sequence):
             #Note que em um caso mais real, não teríamos o X... o X seria apenas um vetor com o nome
             #dos arquivos que contém as imagens! Daí teria que abrir os arquivos, extrair as matrizes
             #de pixels, e daí sim, chamar o mixup.
-            img1 = Image.open(self.X[j])
+            img1 = Image.open(self.X[j].replace("\\", os.path.sep))
             img1 =  array(img1)
             img1 = img1[:,:,:3]
             img1 = np.mean(img1, axis=-1, keepdims=True)
-            img2 = Image.open(self.X[k])
+            img2 = Image.open(self.X[k].replace("\\", os.path.sep))
             img2 =  array(img2)
             img2 = img2[:,:,:3]
             img2 = np.mean(img2, axis=-1, keepdims=True) 
             X[i,] = self.mixup(img1, img2, self.mixup_alpha)
             y[i,] = self.mixup(self.labels[j], self.labels[k], self.mixup_alpha)
         
+            #incluir as imagens originais também
+            X[ (1*output_len) + i,] = img1
+            X[ (2*output_len) + i,] = img2
+            y[ (1*output_len) + i,] = self.labels[j]
+            y[ (2*output_len) + i,] = self.labels[k]
+            
+
         #retorna o batch
         return X, y
 
@@ -142,11 +162,18 @@ opt = Dense(10, activation='softmax')(net)
 '''
 print("Inicializando modelo")
 ipt = Input(shape=(64, 26, 1) )
-l = Conv2D(100, (7, 7),padding='same', strides=1, activation='relu')(ipt)
+l = BatchNormalization()(ipt)
+l = Conv2D(100, (7, 7),padding='same', strides=1, activation='linear')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
 l = MaxPooling2D(pool_size=(3, 3),strides=2, padding='same')(l)
-l = Conv2D(150, (5, 5), activation='relu', strides=1, padding='same')(l)
+l = Conv2D(150, (5, 5), activation='linear', strides=1, padding='same')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
 l = MaxPooling2D(pool_size=(3, 3), strides=2, padding='same')(l)
-l = Conv2D(200, (3, 3), activation='relu', strides=1, padding='same')(l)
+l = Conv2D(200, (3, 3), activation='linear', strides=1, padding='same')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
 l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
 l = Flatten()(l)
 l = Dense(41, activation='softmax')(l)
@@ -158,8 +185,8 @@ print(model.summary())
 
 #Instancia os 2 generators, um para os dados de treino e outro para os dados de validação.
 #Atenção ao parâmetro dim.. Ele indica qual é o shape de cada imagem e deve ser passado.
-training_generator = DataGenerator(X_train, Y_train, batch_size=32, shuffle=True, mixup_alpha=0.1)
-validation_generator = DataGenerator(X_val, Y_val, batch_size=32, shuffle=True, mixup_alpha=0.1)
+training_generator = DataGenerator(X_train, Y_train, batch_size=256, shuffle=True, mixup_alpha=0.2)
+validation_generator = DataGenerator(X_val, Y_val, batch_size=256, shuffle=True, mixup_alpha=0.2)
 
 t0 = time.time()
 #Note que agora o fit recebe os generators ao invés dos dados diretamente.
@@ -167,7 +194,7 @@ t0 = time.time()
 #temos muitas imagens pra carregar e fazer mixup. No caso desse exemplo ele deixa o código mais
 #demorado rs.
 h = model.fit(training_generator, epochs=10, validation_data=validation_generator,
-                       use_multiprocessing=False, workers=4, verbose=2)
+                       use_multiprocessing=False, workers=1, verbose=2)
 print("O treino demorou %.2f segundos." % (time.time() - t0))
 model.save("modeloMixup")
 
