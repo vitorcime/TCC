@@ -28,16 +28,6 @@ imagens_teste = imagens_teste[:,:,:,:3]
 imagens_teste = np.mean(imagens_teste, axis=-1, keepdims=True)
 print(imagens_teste.shape)
 
-print("Carregando classes")
-identificacoes_teste = np.loadtxt("../freesound-audio-tagging/categorias/categoriastest.txt", delimiter='\n', dtype= 'str')
-categorias = sorted(set(identificacoes_teste))
-dic = dict()
-for n, f in enumerate(categorias):
-    dic[f] = n
-for i in range(0, len(identificacoes_teste)):
-    identificacoes_teste[i] = dic[identificacoes_teste[i]]
-identificacoes_teste = to_categorical(identificacoes_teste)
-print(identificacoes_teste.shape)
 
 
 test_shape = imagens_teste.shape
@@ -83,11 +73,9 @@ for i in range(0, len(identificacoes_teste)):
     identificacoes_teste[i] = dic[identificacoes_teste[i]]
 
 identificacoes_teste = to_categorical(identificacoes_teste)
-print(identificacoes_teste.shape)
-
-
 identificacoes_teste = np.argmax(identificacoes_teste, axis=1)
 print(identificacoes_teste.shape)
+
 print(classification_report(y_pred = resultadoSoma, y_true = identificacoes_teste))
 
 '''
