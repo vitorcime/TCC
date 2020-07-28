@@ -26,6 +26,7 @@ imagens_teste = np.load("testArray.npy")
 #vamos tirar o canal alpha...
 imagens_teste = imagens_teste[:,:,:,:3]
 imagens_teste = np.mean(imagens_teste, axis=-1, keepdims=True)
+print(imagens_teste.shape)
 
 print("Carregando classes")
 identificacoes_teste = np.loadtxt("../freesound-audio-tagging/categorias/categoriastest.txt", delimiter='\n', dtype= 'str')
@@ -41,7 +42,7 @@ print(identificacoes_teste.shape)
 
 test_shape = imagens_teste.shape
 imagens_teste = np.reshape(imagens_teste, (imagens_teste.shape[0], -1))
-print(imagens_teste.shape)
+
 
 
 print("Transform")
@@ -56,6 +57,7 @@ imagens_teste = np.reshape(imagens_teste, test_shape)
 
 modelo = load_model("modelo")
 resultado = modelo.predict(imagens_teste)
+print(imagens_teste.shape)
 
 
 
@@ -69,7 +71,7 @@ for y in numerodePatches:
     i+=int(y)
 resultadoSoma = np.array(resultadoSoma)
 resultadoSoma = np.argmax(resultadoSoma, axis=1)
-print(resultadoSoma)
+print(resultadoSoma.shape)
 
 print("Carregando classes")
 identificacoes_teste = np.loadtxt("../freesound-audio-tagging/categorias/categoriasSpecstest.txt", delimiter='\n', dtype= 'str')
@@ -79,10 +81,14 @@ for n, f in enumerate(categorias):
     dic[f] = n
 for i in range(0, len(identificacoes_teste)):
     identificacoes_teste[i] = dic[identificacoes_teste[i]]
+
 identificacoes_teste = to_categorical(identificacoes_teste)
+print(identificacoes_teste.shape)
+
 
 identificacoes_teste = np.argmax(identificacoes_teste, axis=1)
-print(classification_report(resultadoSoma, identificacoes_teste))
+print(identificacoes_teste.shape)
+print(classification_report(y_pred = resultadoSoma, y_true = identificacoes_teste))
 
 '''
 perda_teste, acuracia_teste = modelo.evaluate(imagens_teste, identificacoes_teste)

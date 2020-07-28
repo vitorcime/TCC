@@ -2,6 +2,7 @@
 # coding: utf-8
 
 # In[1]:
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="1"
 import pandas as pd
@@ -185,18 +186,20 @@ print(model.summary())
 
 #Instancia os 2 generators, um para os dados de treino e outro para os dados de validação.
 #Atenção ao parâmetro dim.. Ele indica qual é o shape de cada imagem e deve ser passado.
-training_generator = DataGenerator(X_train, Y_train, batch_size=256, shuffle=True, mixup_alpha=0.2)
-validation_generator = DataGenerator(X_val, Y_val, batch_size=256, shuffle=True, mixup_alpha=0.2)
+training_generator = DataGenerator(X_train, Y_train, batch_size=256, shuffle=True, mixup_alpha=0.4)
+validation_generator = DataGenerator(X_val, Y_val, batch_size=256, shuffle=True, mixup_alpha=0.4)
 
 t0 = time.time()
 #Note que agora o fit recebe os generators ao invés dos dados diretamente.
 #use_multiprocessing permite calcular os batches em paralelo. Entretanto, só é útil pra quando
 #temos muitas imagens pra carregar e fazer mixup. No caso desse exemplo ele deixa o código mais
 #demorado rs.
-h = model.fit(training_generator, epochs=10, validation_data=validation_generator,
-                       use_multiprocessing=False, workers=1, verbose=2)
+ES = EarlyStopping(monitor='val_loss', patience=10, verbose=30, min_delta=0.001, restore_best_weights=True)
+CK = ModelCheckpoint("checkpointRnn0.4", monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+h = model.fit(training_generator, epochs=50, validation_data=validation_generator,
+                       use_multiprocessing=False, workers=1, verbose=2, callbacks=[ES,CK])
 print("O treino demorou %.2f segundos." % (time.time() - t0))
-model.save("modeloMixup")
+model.save("modeloMixup0.4")
 
 
 # plt.plot(h.history['loss'], label='Training loss')
