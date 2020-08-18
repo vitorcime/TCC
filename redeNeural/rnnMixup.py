@@ -62,7 +62,7 @@ print(X_train.shape, X_val.shape, Y_train.shape, Y_val.shape)
 # In[12]:
 
 
-class DataGenerator(keras.utils.Sequence):
+class MixupDataGenerator(keras.utils.Sequence):
     def __init__(self, X, labels, batch_size=32, dim=(64,26,1), shuffle=True, mixup_alpha=0.3):
         self.X = X
         self.dim = dim
@@ -101,7 +101,10 @@ class DataGenerator(keras.utils.Sequence):
 
     def mixup(self, x1, x2, alpha):
         #função de mixup
-        return (alpha * x1) + ((1-alpha) * x2)
+        
+        lbd = np.random.beta(alpha,alpha)
+        
+        return (lbd * x1) + ((1-lbd) * x2)
             
     def __data_generation(self, sample_indexes):
         'Generates data containing batch_size samples' # X : (n_samples, *dim, n_channels)
@@ -112,8 +115,11 @@ class DataGenerator(keras.utils.Sequence):
         # pré-alocar os numpy arrays de saída.
         # Isso é mais rápido que ir fazendo append na lista e depois
         # chamando np.array pra transformar um um numpy array.
-        X = np.empty((output_len * 3, *self.dim))
-        y = np.empty((output_len * 3, *self.labels.shape[1:]))
+        # X = np.empty((output_len * 3, *self.dim))
+        # y = np.empty((output_len * 3, *self.labels.shape[1:]))
+        
+        X = np.empty((output_len, *self.dim))
+        y = np.empty((output_len, *self.labels.shape[1:]))        
 
         #print("".join([" " for i in range(random.randint(0,10))])  + "mixing up...")
 
@@ -139,11 +145,82 @@ class DataGenerator(keras.utils.Sequence):
             y[i,] = self.mixup(self.labels[j], self.labels[k], self.mixup_alpha)
         
             #incluir as imagens originais também
-            X[ (1*output_len) + i,] = img1
-            X[ (2*output_len) + i,] = img2
-            y[ (1*output_len) + i,] = self.labels[j]
-            y[ (2*output_len) + i,] = self.labels[k]
+            #X[ (1*output_len) + i,] = img1
+            #X[ (2*output_len) + i,] = img2
+            #y[ (1*output_len) + i,] = self.labels[j]
+            #y[ (2*output_len) + i,] = self.labels[k]
             
+
+        #retorna o batch
+        return X, y
+
+
+class DataLoader(keras.utils.Sequence):
+    def __init__(self, X, labels, batch_size=32, dim=(64,26,1), shuffle=True):
+        self.X = X
+        self.dim = dim
+        self.batch_size = batch_size
+        self.labels = labels
+        self.indexes = None
+        self.shuffle = shuffle
+        self.on_epoch_end()
+
+    def __len__(self):
+        #Serve pra indicar quantos batches terão por época. Quem chama isso é o keras.
+        return int(np.floor(len(self.X) / self.batch_size))
+
+    def __getitem__(self, index):
+        #Cada thread chama essa função pra gerar os batches!
+        
+        #esse self.indexes contém os índices de todos os exemplos do dataset
+        #já indexes contém uma subsequencia de self.indexes que corresponde ao batch atual
+        indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size]
+
+        #chama a função que gera os dados. na vdd não precisaria chamar outra
+        #função pra isso..
+        X, y = self.__data_generation(indexes)
+
+        return X, y
+
+    def on_epoch_end(self):
+        #isso é executado ao final de toda época (keras que chama)
+        #Note que self.indexes é apenas num numpy array, com 
+            #o índice de cada elemento do dataset. Opcionalmente,
+            #os índices são embaralhados.
+        self.indexes = np.arange(len(self.X))
+        if self.shuffle == True:
+            np.random.shuffle(self.indexes)
+            
+    def __data_generation(self, sample_indexes):
+        'Generates data containing batch_size samples' # X : (n_samples, *dim, n_channels)
+        #como vamos usar o mixup, a quantidade de elementos na saída é metade
+        #do número de elementos do batch
+        output_len = self.batch_size
+        
+        # pré-alocar os numpy arrays de saída.
+        # Isso é mais rápido que ir fazendo append na lista e depois
+        # chamando np.array pra transformar um um numpy array.
+        X = np.empty((output_len, *self.dim))
+        y = np.empty((output_len, *self.labels.shape[1:]))
+
+        #print("".join([" " for i in range(random.randint(0,10))])  + "mixing up...")
+
+        #pra cada elemento da saída
+        for i in range(output_len):
+            #computa o índice que contém o indice das 2 imagens
+            j = sample_indexes[i]
+            
+            #calcula o mixup
+            #Note que em um caso mais real, não teríamos o X... o X seria apenas um vetor com o nome
+            #dos arquivos que contém as imagens! Daí teria que abrir os arquivos, extrair as matrizes
+            #de pixels, e daí sim, chamar o mixup.
+            img1 = Image.open(self.X[j].replace("\\", os.path.sep))
+            img1 =  array(img1)
+            img1 = img1[:,:,:3]
+            img1 = np.mean(img1, axis=-1, keepdims=True)
+            
+            X[i,] = img1
+            y[i,] = self.labels[j]
 
         #retorna o batch
         return X, y
@@ -179,27 +256,29 @@ l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
 l = Flatten()(l)
 l = Dense(41, activation='softmax')(l)
 model = keras.models.Model(inputs=ipt, outputs=l)
-model.compile(optimizer=keras.optimizers.Adam(lr=0.005), 
+model.compile(optimizer=keras.optimizers.Adam(lr=0.001), 
                   loss='categorical_crossentropy', metrics=['accuracy'])
 
 print(model.summary())
 
 #Instancia os 2 generators, um para os dados de treino e outro para os dados de validação.
 #Atenção ao parâmetro dim.. Ele indica qual é o shape de cada imagem e deve ser passado.
-training_generator = DataGenerator(X_train, Y_train, batch_size=256, shuffle=True, mixup_alpha=0.4)
-validation_generator = DataGenerator(X_val, Y_val, batch_size=256, shuffle=True, mixup_alpha=0.4)
+alpha = 0.05
+training_generator = MixupDataGenerator(X_train, Y_train, batch_size=256, shuffle=True, mixup_alpha=alpha)
+validation_generator = DataLoader(X_val, Y_val, batch_size=256, shuffle=True)
 
 t0 = time.time()
 #Note que agora o fit recebe os generators ao invés dos dados diretamente.
 #use_multiprocessing permite calcular os batches em paralelo. Entretanto, só é útil pra quando
 #temos muitas imagens pra carregar e fazer mixup. No caso desse exemplo ele deixa o código mais
 #demorado rs.
-ES = EarlyStopping(monitor='val_loss', patience=10, verbose=30, min_delta=0.001, restore_best_weights=True)
-CK = ModelCheckpoint("checkpointRnn0.4", monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-h = model.fit(training_generator, epochs=50, validation_data=validation_generator,
-                       use_multiprocessing=False, workers=1, verbose=2, callbacks=[ES,CK])
+
+ES = EarlyStopping(monitor='val_loss', patience=40, verbose=1, min_delta=0.001, restore_best_weights=True)
+CK = ModelCheckpoint("checkpointRnn005", monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+h = model.fit(training_generator, epochs=500, validation_data=validation_generator,
+                       use_multiprocessing=True, workers=1, verbose=2, callbacks=[ES,CK])
 print("O treino demorou %.2f segundos." % (time.time() - t0))
-model.save("modeloMixup0.4")
+model.save("modeloMixup005")
 
 
 # plt.plot(h.history['loss'], label='Training loss')

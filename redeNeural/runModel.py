@@ -47,8 +47,13 @@ imagens_teste = np.reshape(imagens_teste, test_shape)
 
 modelo = load_model("modelo")
 resultado = modelo.predict(imagens_teste)
-print(imagens_teste.shape)
+y = []
+for i in resultado:
+   y.append(np.argmax(i))
+print(np.unique(y, return_counts=True))
 
+
+'''
 
 
 numerodePatches = np.loadtxt("numeroDePatches.txt")
@@ -77,7 +82,7 @@ identificacoes_teste = np.argmax(identificacoes_teste, axis=1)
 print(identificacoes_teste.shape)
 
 print(classification_report(y_pred = resultadoSoma, y_true = identificacoes_teste))
-
+'''
 '''
 perda_teste, acuracia_teste = modelo.evaluate(imagens_teste, identificacoes_teste)
 print('Perda do teste: ', perda_teste)

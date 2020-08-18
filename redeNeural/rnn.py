@@ -6,7 +6,7 @@ import keras
 import numpy as np
 import os
 from PIL import Image
-from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Input, Lambda 
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Input, Lambda, BatchNormalization, Activation 
 from keras.callbacks import EarlyStopping
 import pandas as pd
 import glob
@@ -17,7 +17,7 @@ import keras.backend as K
 import dill
 
 
-def mixup(img1,img2,alpha):
+
     
 
 scaler = StandardScaler()
@@ -72,6 +72,7 @@ X_val = np.reshape(X_val, val_shape)
 
 
 print("Inicializando modelo")
+'''
 ipt = Input(shape=(64, 26, 1) )
 l = Conv2D(100, (7, 7),padding='same', strides=1, activation='relu')(ipt)
 l = MaxPooling2D(pool_size=(3, 3),strides=2, padding='same')(l)
@@ -83,16 +84,37 @@ l = Flatten()(l)
 l = Dense(41, activation='softmax')(l)
 modelo = keras.Model(inputs=ipt, outputs=l)
 print(modelo.summary())
+'''
+ipt = Input(shape=(64, 26, 1) )
+l = BatchNormalization()(ipt)
+l = Conv2D(100, (7, 7),padding='same', strides=1, activation='linear')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
+l = MaxPooling2D(pool_size=(3, 3),strides=2, padding='same')(l)
+l = Conv2D(150, (5, 5), activation='linear', strides=1, padding='same')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
+l = MaxPooling2D(pool_size=(3, 3), strides=2, padding='same')(l)
+l = Conv2D(200, (3, 3), activation='linear', strides=1, padding='same')(l)
+l = BatchNormalization()(l)
+l = Activation('relu')(l)
+l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
+l = Flatten()(l)
+l = Dense(41, activation='softmax')(l)
+model = keras.models.Model(inputs=ipt, outputs=l)
+model.compile(optimizer=keras.optimizers.Adam(lr=0.005), 
+                  loss='categorical_crossentropy', metrics=['accuracy'])
 
+print(model.summary())
 
-modelo.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 ES = EarlyStopping(monitor='val_loss', patience=40, verbose=30, min_delta=0.001, restore_best_weights=True)
-historico = modelo.fit(X_train, Y_train, validation_data=(X_val, Y_val), batch_size=64, callbacks=[ES], epochs=1000)
+historico = model.fit(X_train, Y_train, validation_data=(X_val, Y_val), batch_size=64, callbacks=[ES], epochs=1000)
 
 plt.plot(historico.history['loss'], label='Training')
 plt.plot(historico.history['val_loss'], label='Validation')
 plt.legend()
 plt.savefig("train_curve.png")
-modelo.save("modelo")
+model.save("modelo")
 
