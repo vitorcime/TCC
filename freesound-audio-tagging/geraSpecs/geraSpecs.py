@@ -18,7 +18,8 @@ def gerarSpecsTrain(img):
     fig.add_axes(ax)
     plt.pcolormesh(np.log10(D + 0.001))
     plt.savefig("../specsTrain/" + img.replace('.wav', '') + '.png')
-    plt.close()
+    plt.close("all")
+    
 
 
 def gerarSpecsTest(img):
@@ -31,20 +32,21 @@ def gerarSpecsTest(img):
     fig.add_axes(ax)
     plt.pcolormesh(np.log10(D + 0.001))
     plt.savefig("../specsTest/" + img.replace('.wav', '') + '.png')
-    plt.close()
+    plt.close("all")
+    
 
 
 
 if(sys.argv[1] == 'train'):
     readCSV = pd.read_csv("../CSV/train_post_competition.csv")
     name = readCSV['fname']
-    categoria = readCSV['label']
-    Parallel(n_jobs=6, verbose=1)(delayed(gerarSpecsTrain)(i) for i in name)
+    for i in name:
+        gerarSpecsTrain(i)
+    #Parallel(n_jobs=6, verbose=1)(delayed(gerarSpecsTrain)(i) for i in name)
 
 if(sys.argv[1] == 'test'):
     readCSV = pd.read_csv("../CSV/test_post_competition.csv")
     name = readCSV['fname']
-    categoria = readCSV['label']
     Parallel(n_jobs=6, verbose=1)(delayed(gerarSpecsTest)(i) for i in name)
     
 

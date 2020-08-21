@@ -45,7 +45,7 @@ imagens_teste = np.reshape(imagens_teste, test_shape)
 
 
 
-modelo = load_model("modelo")
+modelo = load_model("modeloMixup005")
 resultado = modelo.predict(imagens_teste)
 y = []
 for i in resultado:

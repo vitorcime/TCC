@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
-from keras.backend.tensorflow_backend import set_session
+
+#from keras.backend.tensorflow_backend import set_session
 from keras.utils import to_categorical
 import tensorflow as tf
-import keras
+from tensorflow import keras
 import numpy as np
 import os
 from PIL import Image
-from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Input, Lambda, BatchNormalization, Activation 
-from keras.callbacks import EarlyStopping
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Input, Lambda, BatchNormalization, Activation 
+from tensorflow.keras.callbacks import EarlyStopping
 import pandas as pd
 import glob
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-import keras.backend as K
+import tensorflow.keras.backend as K
 import dill
 
 
@@ -27,6 +28,7 @@ session_config=tf.compat.v1.ConfigProto(
 tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_config))
 
 
+
 print("Carregando imagens")
 imagens_treino = np.load("trainArrayVerificados.npy")
 #vamos tirar o canal alpha...
@@ -37,7 +39,7 @@ print(imagens_treino.shape)
 
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriasTrain.txt", delimiter='\n', dtype= 'str')
+identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriastrain.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_treino))
 dic = dict()
 for n, f in enumerate(categorias):
@@ -109,7 +111,7 @@ print(model.summary())
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-ES = EarlyStopping(monitor='val_loss', patience=40, verbose=30, min_delta=0.001, restore_best_weights=True)
+ES = EarlyStopping(monitor='val_loss', patience=40, verbose=1, min_delta=0.001, restore_best_weights=True)
 historico = model.fit(X_train, Y_train, validation_data=(X_val, Y_val), batch_size=64, callbacks=[ES], epochs=1000)
 
 plt.plot(historico.history['loss'], label='Training')

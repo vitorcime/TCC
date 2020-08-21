@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # In[1]:
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="1"
 import pandas as pd
@@ -12,33 +12,28 @@ tf.get_logger().setLevel("ERROR")
 import time
 import numpy as np
 import keras
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Lambda, BatchNormalization, Activation
+from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Lambda, BatchNormalization, Activation
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 from PIL import Image
 from numpy import array
-import keras.backend as K
+import tensorflow.keras.backend as K
 import copy
 import random
 
-# # Carregar Dados
-# 
-# Isso só faz sentido nesse exemplo. Provavelmente quando usarmos isso com muitos dados o que vamos passar como X é o nome dos arquivos.
-# 
-
-# In[2]:
+'''
 session_config=tf.compat.v1.ConfigProto(
     gpu_options=tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.7))
 tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_config))
-
+'''
 print("Carregando imagens")
 patchsNames = np.loadtxt("nomes.txt", delimiter='\n', dtype= 'str')
 
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriasTrain.txt", delimiter='\n', dtype= 'str')
+identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriastrain.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_treino))
 dic = dict()
 for n, f in enumerate(categorias):
@@ -62,7 +57,7 @@ print(X_train.shape, X_val.shape, Y_train.shape, Y_val.shape)
 # In[12]:
 
 
-class MixupDataGenerator(keras.utils.Sequence):
+class MixupDataGenerator(tf.keras.utils.Sequence):
     def __init__(self, X, labels, batch_size=32, dim=(64,26,1), shuffle=True, mixup_alpha=0.3):
         self.X = X
         self.dim = dim
@@ -155,7 +150,7 @@ class MixupDataGenerator(keras.utils.Sequence):
         return X, y
 
 
-class DataLoader(keras.utils.Sequence):
+class DataLoader(tf.keras.utils.Sequence):
     def __init__(self, X, labels, batch_size=32, dim=(64,26,1), shuffle=True):
         self.X = X
         self.dim = dim
@@ -231,7 +226,7 @@ class DataLoader(keras.utils.Sequence):
 # In[15]:
 
 
-keras.backend.clear_session()
+tf.keras.backend.clear_session()
 ''''
 ipt = Input(shape=(64, 26, 1) )
 net = Dense(100, activation='relu')(ipt)
@@ -255,8 +250,8 @@ l = Activation('relu')(l)
 l = Lambda(lambda x: K.max(x, axis=[1,2], keepdims=True), name='ReduceMax')(l)
 l = Flatten()(l)
 l = Dense(41, activation='softmax')(l)
-model = keras.models.Model(inputs=ipt, outputs=l)
-model.compile(optimizer=keras.optimizers.Adam(lr=0.001), 
+model = tf.keras.models.Model(inputs=ipt, outputs=l)
+model.compile(optimizer=tf.keras.optimizers.Adam(lr=0.001), 
                   loss='categorical_crossentropy', metrics=['accuracy'])
 
 print(model.summary())

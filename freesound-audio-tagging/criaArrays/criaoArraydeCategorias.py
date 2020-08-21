@@ -15,7 +15,6 @@ def CriaArray(args):
         oi = glob.glob("../patchsTrain/"+  img.replace('.wav', '')+ "_*.png")
     if (sys.argv[1] == 'test'):
         oi = glob.glob("../patchsTest/"+  img.replace('.wav', '')+ "_*.png")    
-    print(oi)
     return [categoria for i in range(len(oi))]
 
 if __name__ == "__main__":
