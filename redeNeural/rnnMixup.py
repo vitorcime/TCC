@@ -146,7 +146,7 @@ class MixupDataGenerator(tf.keras.utils.Sequence):
             #y[ (2*output_len) + i,] = self.labels[k]
             
 
-        #retorna o batch
+        #retorna o batchcheckpointRnn005
         return X, y
 
 
@@ -161,9 +161,7 @@ class DataLoader(tf.keras.utils.Sequence):
         self.on_epoch_end()
 
     def __len__(self):
-        #Serve pra indicar quantos batches terão por época. Quem chama isso é o keras.
-        return int(np.floor(len(self.X) / self.batch_size))
-
+        #Serve pra indicar quantos batches terão por épcheckpointRnn005
     def __getitem__(self, index):
         #Cada thread chama essa função pra gerar os batches!
         
