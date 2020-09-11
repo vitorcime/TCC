@@ -11,7 +11,7 @@ def CriaArray(img, lista):
     return lista
 
 if __name__ == "__main__":
-    arquivo = pd.read_csv('../test_post_competition.csv')
+    arquivo = pd.read_csv('../CSV/test_post_competition.csv')
     name = sorted(arquivo['fname'])
     lista = list()
     porcentagem = 0

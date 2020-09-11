@@ -16,7 +16,7 @@ def gerarSpecsTrain(img):
     ax = plt.Axes(fig, [0,0,1,1])
     ax.set_axis_off()
     fig.add_axes(ax)
-    plt.pcolormesh(np.log10(D + 0.001))
+    plt.pcolormesh(np.log10(D + np.finfo(D.dtype).eps))
     plt.savefig("../specsTrain/" + img.replace('.wav', '') + '.png')
     plt.close("all")
     
@@ -30,7 +30,7 @@ def gerarSpecsTest(img):
     ax = plt.Axes(fig, [0,0,1,1])
     ax.set_axis_off()
     fig.add_axes(ax)
-    plt.pcolormesh(np.log10(D + 0.001))
+    plt.pcolormesh(np.log10(D + np.finfo(D.dtype).eps))
     plt.savefig("../specsTest/" + img.replace('.wav', '') + '.png')
     plt.close("all")
     
