@@ -30,7 +30,7 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_confi
 
 
 print("Carregando imagens")
-imagens_treino = np.load("trainArrayVerificados.npy")
+imagens_treino = np.load("trainArrayEnergia.npy")
 #vamos tirar o canal alpha...
 print(imagens_treino.shape)
 imagens_treino = imagens_treino[:,:,:,:3]
@@ -39,7 +39,7 @@ print(imagens_treino.shape)
 
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriastrain.txt", delimiter='\n', dtype= 'str')
+identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriasEnergia.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_treino))
 dic = dict()
 for n, f in enumerate(categorias):

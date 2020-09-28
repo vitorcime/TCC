@@ -22,7 +22,7 @@ session_config=tf.compat.v1.ConfigProto(
 tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_config))
 
 print("Carregando imagens")
-imagens_teste = np.load("testArray.npy")
+imagens_teste = np.load("testArrayEnergia.npy")
 #vamos tirar o canal alpha...
 imagens_teste = imagens_teste[:,:,:,:3]
 imagens_teste = np.mean(imagens_teste, axis=-1, keepdims=True)
@@ -45,7 +45,7 @@ imagens_teste = np.reshape(imagens_teste, test_shape)
 
 
 
-modelo = load_model("modeloMixup005")
+modelo = load_model("modeloSemDA")
 resultado = modelo.predict(imagens_teste)
 y = []
 for i in resultado:
@@ -69,7 +69,7 @@ resultadoSoma = np.argmax(resultadoSoma, axis=1)
 print(resultadoSoma.shape)
 
 print("Carregando classes")
-identificacoes_teste = np.loadtxt("../freesound-audio-tagging/categorias/categoriasSpecstest.txt", delimiter='\n', dtype= 'str')
+identificacoes_teste = np.loadtxt("../freesound-audio-tagging/categorias/categoriasEnergia.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_teste))
 dic = dict()
 for n, f in enumerate(categorias):

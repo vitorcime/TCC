@@ -1,20 +1,37 @@
+import os
+import numpy as np
+import pandas as pd
 from PIL import Image
 from numpy import array
-import numpy as np
-import dill
+from joblib import Parallel, delayed
 
-def calculaEnergia(img):
+def calculaEnergia(img, lista):
+    img = img.replace('.wav', '.png')
+    imagem = Image.open('../freesound-audio-tagging/specsTest/'+img)
     patches = []
-    soma = np.sum(np.square(img), axis=0)
+    arr = array(imagem)
+    arr = arr[:,:,:3]
+    arr = np.mean(arr, axis=-1, keepdims=True)
+    soma = np.sum(np.square(arr), axis=0)
     soma[:] = [x / soma[np.argmax(soma)] for x in soma]
     for i in range(0,soma.shape[0]):
-        if (soma[i] > 0.5):
+        if (soma[i] > 0.3 and i+13 <= soma.shape[0]):
             patches.append(int(i/26))
-    return set(patches)
-    
+    patches = set(patches)
+    for i in patches:
+        patch = Image.open('../freesound-audio-tagging/patchsTest/'+img.replace('.png', '_') + str(i) + '.png' )
+        arr =  array(patch) 
+        lista.append(arr) 
+    return lista
 
-imagem = Image.open("025f3fd2.png")
-arr = array(imagem)
-arr = arr[:,:,:3]
-arr = np.mean(arr, axis=-1, keepdims=True)
-calculaEnergia(arr)
+arquivo = pd.read_csv('../freesound-audio-tagging/CSV/test_post_competition.csv')
+name = sorted(arquivo['fname']) 
+lista = list()
+porcentagem = 0
+for n in name:
+    lista = calculaEnergia(n, lista)
+    porcentagem+=1
+    print( "%.3f" % ((porcentagem*100)/len(name)))
+lista = array(lista)
+print(lista.shape)
+np.save("./testArrayEnergia.npy", lista)
