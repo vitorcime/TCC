@@ -23,6 +23,7 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_confi
 
 print("Carregando imagens")
 imagens_teste = np.load("testArrayEnergia.npy")
+
 #vamos tirar o canal alpha...
 imagens_teste = imagens_teste[:,:,:,:3]
 imagens_teste = np.mean(imagens_teste, axis=-1, keepdims=True)
@@ -60,16 +61,19 @@ numerodePatches = np.loadtxt("numeroPatchesEnergia.txt")
 
 i = 0
 resultadoSoma = list()
-
+'''
 for y in numerodePatches:
     resultadoSoma.append(np.sum(resultado[i:i+int(y),:], axis=0))
     i+=int(y)
 resultadoSoma = np.array(resultadoSoma)
 resultadoSoma = np.argmax(resultadoSoma, axis=1)
 print(resultadoSoma.shape)
-
+'''
 print("Carregando classes")
-identificacoes_teste = np.loadtxt("../freesound-audio-tagging/categorias/categoriasSpecstest.txt", delimiter='\n', dtype= 'str')
+identificacoes_teste = np.loadtxt("../freesound-audio-tagging/categorias/categoriastestEnergia.txt", delimiter='\n', dtype= 'str')
+resultado = np.argmax(resultado, axis=1)
+
+
 categorias = sorted(set(identificacoes_teste))
 dic = dict()
 for n, f in enumerate(categorias):
@@ -78,10 +82,12 @@ for i in range(0, len(identificacoes_teste)):
     identificacoes_teste[i] = dic[identificacoes_teste[i]]
 
 identificacoes_teste = to_categorical(identificacoes_teste)
-identificacoes_teste = np.argmax(identificacoes_teste, axis=1)
 print(identificacoes_teste.shape)
 
-print(classification_report(y_pred = resultadoSoma, y_true = identificacoes_teste))
+identificacoes_teste = np.argmax(identificacoes_teste, axis=1)
+print(identificacoes_teste.shape)
+print(resultado.shape)
+print(classification_report(y_pred = resultado, y_true = identificacoes_teste))
 
 '''
 perda_teste, acuracia_teste = modelo.evaluate(imagens_teste, identificacoes_teste)

@@ -39,7 +39,7 @@ print(imagens_treino.shape)
 
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriasEnergia.txt", delimiter='\n', dtype= 'str')
+identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriastrainEnergia.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_treino))
 dic = dict()
 for n, f in enumerate(categorias):
@@ -52,6 +52,8 @@ identificacoes_treino = to_categorical(identificacoes_treino)
 X_train, X_val, Y_train, Y_val = train_test_split(imagens_treino, identificacoes_treino, test_size=0.2, 
     random_state=999, shuffle=True, stratify=np.argmax(identificacoes_treino, axis=1))
 
+np.save('x_val.npy',X_val)
+np.save('y_val.npy',Y_val)
 print(X_train.shape)
 train_shape = X_train.shape
 X_train = np.reshape(X_train, (X_train.shape[0], -1))
