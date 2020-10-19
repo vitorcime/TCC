@@ -12,7 +12,7 @@ import sys
 def CriaArray(args):
     img, categoria = args
     if (sys.argv[1] == 'train'):
-        oi = glob.glob("../patchsTrain/"+  img.replace('.wav', '')+ "_*.png")
+        oi = glob.glob("../patchsTrain13/"+  img.replace('.wav', '')+ "_*.png")
     if (sys.argv[1] == 'test'):
         oi = glob.glob("../patchsTest/"+  img.replace('.wav', '')+ "_*.png")    
     return [categoria for i in range(len(oi))]

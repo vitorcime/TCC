@@ -10,14 +10,14 @@ def criaPatch(args):
     arr = numpy.array(img)
     left = 0
     top = 0
-    right = 26
+    right = 39
     bottom = 64
-    while(arr.shape[1] - 13 >= right):
+    while(arr.shape[1] - 19 >= right):
         im1 = img.crop((left, top, right, bottom)) 
-        im1.save('../patchs' + tipoDado + '/'+ nomeImg.replace('.png', '') + '_' + str(i) + ".png")
+        im1.save('../patchs' + tipoDado + '39/'+ nomeImg.replace('.png', '') + '_' + str(i) + ".png")
         i+=1
-        left+=13
-        right+=13 
+        left+=19
+        right+=19 
 
 if(sys.argv[1] == 'train'):
     imagens =  os.listdir('../specsTrain/')

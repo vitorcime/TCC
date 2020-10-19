@@ -1,8 +1,8 @@
 specsOld/
 freesound-audio-tagging/audio_test
 freesound-audio-tagging/audio_train
-freesound-audio-tagging/patchsTrain
-freesound-audio-tagging/patchsTest
+freesound-audio-tagging/patchsTrain*
+freesound-audio-tagging/patchsTest*
 freesound-audio-tagging/specsTrain
 freesound-audio-tagging/specsTest
 freesound-audio-tagging/*.txt
