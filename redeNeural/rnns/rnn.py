@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as K
 import dill
+import sys
 
 
 
@@ -30,7 +31,7 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_confi
 
 
 print("Carregando imagens")
-imagens_treino = np.load("../trainArrayEnergia.npy")
+imagens_treino = np.load("./trainArrayEnergia.npy")
 #vamos tirar o canal alpha...
 print(imagens_treino.shape)
 imagens_treino = imagens_treino[:,:,:,:3]
@@ -39,7 +40,7 @@ print(imagens_treino.shape)
 
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../../freesound-audio-tagging/categorias/categoriastrainEnergia.txt", delimiter='\n', dtype= 'str')
+identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriastrainEnergia.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_treino))
 dic = dict()
 for n, f in enumerate(categorias):
@@ -89,7 +90,7 @@ l = Dense(41, activation='softmax')(l)
 modelo = keras.Model(inputs=ipt, outputs=l)
 print(modelo.summary())
 '''
-ipt = Input(shape=(64, 26, 1) )
+ipt = Input(shape=(64, int(sys.argv[2]), 1) )
 l = BatchNormalization()(ipt)
 l = Conv2D(100, (7, 7),padding='same', strides=1, activation='linear')(l)
 l = BatchNormalization()(l)
@@ -121,5 +122,5 @@ plt.plot(historico.history['loss'], label='Training')
 plt.plot(historico.history['val_loss'], label='Validation')
 plt.legend()
 plt.savefig("train_curve.png")
-model.save("../modelosEnergiaQuantificada/modelo0.9")
+model.save("./modelosEnergiaSimples/modelo" + sys.argv[1] + ' ' + str(sys.argv[2]))
 
