@@ -44,7 +44,13 @@ def calculaEnergiaTrain(img, lista,n_frames, tipo_limiar):
     sel = copy.copy(soma_c)
     sel[sel>=limiar] = 1
     sel[sel<1] = 0
-
+    
+    if 1 not in sel:
+        soma_c = [x / soma_c[np.argmax(soma_c)] for x in soma_c]
+        sel = copy.copy(soma_c)
+        sel = np.array(sel)
+        sel[sel>=limiar] = 1
+        sel[sel<1] = 0
     
     patches = sorted(list(set(filter(None,[ int(i / (int(n_frames)/2)) if (sel[i] and i+int(n_frames)<soma.shape[0]) else None for i in range(soma.shape[0])]))))
     for i in patches:
@@ -87,7 +93,12 @@ def calculaEnergiaTest(img, lista,n_frames, tipo_limiar):
     sel = copy.copy(soma_c)
     sel[sel>=limiar] = 1
     sel[sel<1] = 0
-
+    if 1 not in sel:
+        soma_c = [x / soma_c[np.argmax(soma_c)] for x in soma_c]
+        sel = copy.copy(soma_c)
+        sel = np.array(sel)
+        sel[sel>=limiar] = 1
+        sel[sel<1] = 0
     
     patches = sorted(list(set(filter(None,[ int(i / (int(n_frames)/2)) if (sel[i] and i+int(n_frames)<soma.shape[0]) else None for i in range(soma.shape[0])]))))
 
