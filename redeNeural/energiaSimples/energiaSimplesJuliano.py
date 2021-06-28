@@ -15,7 +15,7 @@ import glob
 energia = sys.argv[1]
 def calculaEnergiaTrain(img, lista,n_frames, tipo_limiar):
     img = img.replace('.wav', '.png')
-    imagem = Image.open('../freesound-audio-tagging/specsTrain/'+img)
+    imagem = Image.open('../../freesound-audio-tagging/specsTrain/'+img)
     patches = []
     arr = array(imagem)
     arr = arr[:,:,:3]
@@ -55,7 +55,7 @@ def calculaEnergiaTrain(img, lista,n_frames, tipo_limiar):
     patches = sorted(list(set(filter(None,[ int(i / (int(n_frames)/2)) if (sel[i] and i+int(n_frames)<soma.shape[0]) else None for i in range(soma.shape[0])]))))
     for i in patches:
         try:
-            patch = Image.open('../freesound-audio-tagging/patchsTrain'+ str(n_frames) + '/' + img.replace('.png', '_') + str(i) + '.png' )
+            patch = Image.open('../../freesound-audio-tagging/patchsTrain'+ str(n_frames) + '/' + img.replace('.png', '_') + str(i) + '.png' )
             arr =  array(patch) 
             lista.append(arr) 
         except:
@@ -64,7 +64,7 @@ def calculaEnergiaTrain(img, lista,n_frames, tipo_limiar):
 
 def calculaEnergiaTest(img, lista,n_frames, tipo_limiar): 
     img = img.replace('.wav', '.png')
-    imagem = Image.open('../freesound-audio-tagging/specsTest/'+img)
+    imagem = Image.open('../../freesound-audio-tagging/specsTest/'+img)
     patches = []
     arr = array(imagem)
     arr = arr[:,:,:3]
@@ -106,7 +106,7 @@ def calculaEnergiaTest(img, lista,n_frames, tipo_limiar):
     
     for i in patches:
         try:
-            patch = Image.open('../freesound-audio-tagging/patchsTest'+ str(n_frames) + '/' +img.replace('.png', '_') + str(i) + '.png' )
+            patch = Image.open('../../freesound-audio-tagging/patchsTest'+ str(n_frames) + '/' +img.replace('.png', '_') + str(i) + '.png' )
             arr =  array(patch) 
             lista.append(arr) 
         except:
@@ -114,7 +114,7 @@ def calculaEnergiaTest(img, lista,n_frames, tipo_limiar):
     return lista
 
 
-arquivo = pd.read_csv('../freesound-audio-tagging/CSV/audiosVerificados.csv')
+arquivo = pd.read_csv('../../freesound-audio-tagging/CSV/audiosVerificados.csv')
 name = sorted(arquivo['fname']) 
 lista = list()
 porcentagem = 0
@@ -126,7 +126,7 @@ lista = array(lista)
 print(lista.shape)
 np.save("./trainArrayEnergia.npy", lista)
 
-arquivo = pd.read_csv('../freesound-audio-tagging/CSV/test_post_competition.csv')
+arquivo = pd.read_csv('../../freesound-audio-tagging/CSV/test_post_competition.csv')
 name = sorted(arquivo['fname']) 
 lista = list()
 porcentagem = 0

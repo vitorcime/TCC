@@ -14,7 +14,7 @@ energia = sys.argv[1]
 def calculaEnergiaTrain(args):
     img, categoria, n_frames, tipo_limiar = args 
     img = img.replace('.wav', '.png')
-    imagem = Image.open('../freesound-audio-tagging/specsTrain/'+img)
+    imagem = Image.open('../../freesound-audio-tagging/specsTrain/'+img)
     patches = []
     arr = array(imagem)
     arr = arr[:,:,:3]
@@ -56,7 +56,7 @@ def calculaEnergiaTrain(args):
     lista = []
     for i in patches:
         try:
-            patch = Image.open('../freesound-audio-tagging/patchsTrain'+ str(sys.argv[2])+'/'+img.replace('.png', '_') + str(i) + '.png' )
+            patch = Image.open('../../freesound-audio-tagging/patchsTrain'+ str(sys.argv[2])+'/'+img.replace('.png', '_') + str(i) + '.png' )
             arr =  array(patch) 
             lista.append(arr) 
         except:
@@ -65,7 +65,7 @@ def calculaEnergiaTrain(args):
 def calculaEnergiaTest(args):
     img, categoria, n_frames, tipo_limiar = args 
     img = img.replace('.wav', '.png')
-    imagem = Image.open('../freesound-audio-tagging/specsTest/'+img)
+    imagem = Image.open('../../freesound-audio-tagging/specsTest/'+img)
     patches = []
     arr = array(imagem)
     arr = arr[:,:,:3]
@@ -106,7 +106,7 @@ def calculaEnergiaTest(args):
     lista = []
     for i in patches:
         try:
-            patch = Image.open('../freesound-audio-tagging/patchsTest'+str(sys.argv[2])+'/'+img.replace('.png', '_') + str(i) + '.png' )
+            patch = Image.open('../../freesound-audio-tagging/patchsTest'+str(sys.argv[2])+'/'+img.replace('.png', '_') + str(i) + '.png' )
             arr =  array(patch) 
             lista.append(arr) 
         except:
@@ -114,7 +114,7 @@ def calculaEnergiaTest(args):
     return [categoria for i in range(len(lista))]
 
 if __name__ == "__main__": 
-    arquivo = pd.read_csv('../freesound-audio-tagging/CSV/audiosVerificados.csv')  
+    arquivo = pd.read_csv('../../freesound-audio-tagging/CSV/audiosVerificados.csv')  
     name = arquivo['fname']
     categorias = arquivo['label']
     lista = list()
@@ -126,10 +126,10 @@ if __name__ == "__main__":
     lista = p.map(calculaEnergiaTrain, [(name[i], categorias[i], str(sys.argv[2]), sys.argv[1]) for i in range(len(name))] )
     lista = np.concatenate(lista)
     print(lista.shape)
-    np.savetxt('../freesound-audio-tagging/categorias/categoriastrainEnergia.txt', lista, newline='\n', fmt='%s')
+    np.savetxt('../../freesound-audio-tagging/categorias/categoriastrainEnergia.txt', lista, newline='\n', fmt='%s')
 
 if __name__ == "__main__": 
-    arquivo = pd.read_csv('../freesound-audio-tagging/CSV/test_post_competition.csv')  
+    arquivo = pd.read_csv('../../freesound-audio-tagging/CSV/test_post_competition.csv')  
     name = arquivo['fname']
     categorias = arquivo['label']
     lista = list()
@@ -141,6 +141,6 @@ if __name__ == "__main__":
     lista = p.map(calculaEnergiaTest, [(name[i], categorias[i], str(sys.argv[2]), sys.argv[1]) for i in range(len(name))] )
     lista = np.concatenate(lista)
     print(lista.shape)
-    np.savetxt('../freesound-audio-tagging/categorias/categoriastestEnergia.txt', lista, newline='\n', fmt='%s')
+    np.savetxt('../../freesound-audio-tagging/categorias/categoriastestEnergia.txt', lista, newline='\n', fmt='%s')
 
 

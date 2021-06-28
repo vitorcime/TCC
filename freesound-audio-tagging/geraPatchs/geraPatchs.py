@@ -21,7 +21,7 @@ def criaPatch(args):
 
 if(sys.argv[1] == 'train'):
     imagens =  os.listdir('../specsTrain/')
-    Parallel(n_jobs=12, verbose=10)(delayed(criaPatch)((i, 'Train')) for i in imagens)
+    Parallel(n_jobs=-1, verbose=1)(delayed(criaPatch)((i, 'Train')) for i in imagens)
 if(sys.argv[1] == 'test'):
     imagens =  os.listdir('../specsTest/')
-    Parallel(n_jobs=12, verbose=10)(delayed(criaPatch)((i, 'Test')) for i in imagens)
+    Parallel(n_jobs=-1, verbose=1)(delayed(criaPatch)((i, 'Test')) for i in imagens)

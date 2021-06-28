@@ -7,7 +7,7 @@ from numpy import array
 import sys
 
 def CriaArray(img, lista, tipoDado):
-    patches = glob.glob("../patchs" + tipoDado + "13/"+  img.replace('.wav', '')+ "_*.png")
+    patches = glob.glob("../patchs" + tipoDado + "50/"+  img.replace('.wav', '')+ "_*.png")
     for i in patches:
         imagem = Image.open(i)
         arr =  array(imagem) 

@@ -40,13 +40,11 @@ def gerarSpecsTest(img):
 if(sys.argv[1] == 'train'):
     readCSV = pd.read_csv("../CSV/train_post_competition.csv")
     name = readCSV['fname']
-    for i in name:
-        gerarSpecsTrain(i)
-    #Parallel(n_jobs=6, verbose=1)(delayed(gerarSpecsTrain)(i) for i in name)
+    Parallel(n_jobs=-1, verbose=1)(delayed(gerarSpecsTrain)(i) for i in name)
 
 if(sys.argv[1] == 'test'):
     readCSV = pd.read_csv("../CSV/test_post_competition.csv")
     name = readCSV['fname']
-    Parallel(n_jobs=6, verbose=1)(delayed(gerarSpecsTest)(i) for i in name)
+    Parallel(n_jobs=-1, verbose=1)(delayed(gerarSpecsTest)(i) for i in name)
     
 

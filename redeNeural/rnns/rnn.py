@@ -24,14 +24,14 @@ import sys
 
 scaler = StandardScaler()
 
-session_config=tf.compat.v1.ConfigProto(
-    gpu_options=tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.7))
-tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_config))
+# session_config=tf.compat.v1.ConfigProto(
+#     gpu_options=tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.7))
+# tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=session_config))
 
 
 
 print("Carregando imagens")
-imagens_treino = np.load("./trainArrayEnergia.npy")
+imagens_treino = np.load("../energiaSimples/trainArrayEnergia.npy")
 #vamos tirar o canal alpha...
 print(imagens_treino.shape)
 imagens_treino = imagens_treino[:,:,:,:3]
@@ -40,7 +40,7 @@ print(imagens_treino.shape)
 
 
 print("Carregando classes")
-identificacoes_treino = np.loadtxt("../freesound-audio-tagging/categorias/categoriastrainEnergia.txt", delimiter='\n', dtype= 'str')
+identificacoes_treino = np.loadtxt("../../freesound-audio-tagging/categorias/categoriastrainEnergia.txt", delimiter='\n', dtype= 'str')
 categorias = sorted(set(identificacoes_treino))
 dic = dict()
 for n, f in enumerate(categorias):
@@ -74,6 +74,7 @@ X_val = ss.transform(X_val)
 print("Reshape")
 X_train = np.reshape(X_train, train_shape)
 X_val = np.reshape(X_val, val_shape)
+print(tf.__version__)
 
 
 print("Inicializando modelo")
